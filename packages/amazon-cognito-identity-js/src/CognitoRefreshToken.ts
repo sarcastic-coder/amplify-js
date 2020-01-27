@@ -17,11 +17,13 @@
 
 /** @class */
 export default class CognitoRefreshToken {
+	protected readonly token: string;
+
 	/**
 	 * Constructs a new CognitoRefreshToken object
 	 * @param {string=} RefreshToken The JWT refresh token.
 	 */
-	constructor({ RefreshToken } = {}) {
+	constructor({ RefreshToken }: { RefreshToken?: string } = {}) {
 		// Assign object
 		this.token = RefreshToken || '';
 	}

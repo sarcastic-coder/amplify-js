@@ -29,7 +29,10 @@ import CognitoRefreshToken from './CognitoRefreshToken';
 import CognitoUserSession from './CognitoUserSession';
 import DateHelper from './DateHelper';
 import CognitoUserAttribute from './CognitoUserAttribute';
-import StorageHelper from './StorageHelper';
+import StorageHelper, { CognitoStorage } from './StorageHelper';
+import CognitoUserPool from './CognitoUserPool';
+import Client from './Client';
+import AuthenticationDetails from './AuthenticationDetails';
 
 /**
  * @callback nodeCallback
@@ -70,8 +73,29 @@ import StorageHelper from './StorageHelper';
  * @param {bool=} userConfirmationNecessary User must be confirmed.
  */
 
+type CognitoUserParams = {
+	Username?: string;
+	Pool: CognitoUserPool;
+	Storage?: CognitoStorage;
+};
+
+type AuthenticationFlowType =
+	| 'USER_SRP_AUTH'
+	| 'USER_PASSWORD_AUTH'
+	| 'CUSTOM_AUTH';
+
 /** @class */
 export default class CognitoUser {
+	public readonly pool: CognitoUserPool;
+	public readonly client: Client;
+	public readonly storage: CognitoStorage;
+	public readonly keyPrefix: string;
+	public readonly userDataKey: string;
+	public username: string;
+	public Session: null | CognitoUserSession;
+	public authenticationFlowType: AuthenticationFlowType;
+	public signInUserSession: null | CognitoUserSession;
+
 	/**
 	 * Constructs a new CognitoUser object
 	 * @param {object} data Creation options
@@ -79,7 +103,7 @@ export default class CognitoUser {
 	 * @param {CognitoUserPool} data.Pool Pool containing the user.
 	 * @param {object} data.Storage Optional storage object.
 	 */
-	constructor(data) {
+	constructor(data: CognitoUserParams) {
 		if (data == null || data.Username == null || data.Pool == null) {
 			throw new Error('Username and pool information are required.');
 		}
@@ -104,7 +128,7 @@ export default class CognitoUser {
 	 * @param {CognitoUserSession} signInUserSession the session
 	 * @returns {void}
 	 */
-	setSignInUserSession(signInUserSession) {
+	setSignInUserSession(signInUserSession: CognitoUserSession): void {
 		this.clearCachedUserData();
 		this.signInUserSession = signInUserSession;
 		this.cacheTokens();
@@ -113,21 +137,21 @@ export default class CognitoUser {
 	/**
 	 * @returns {CognitoUserSession} the current session for this user
 	 */
-	getSignInUserSession() {
+	getSignInUserSession(): CognitoUserSession {
 		return this.signInUserSession;
 	}
 
 	/**
 	 * @returns {string} the user's username
 	 */
-	getUsername() {
+	getUsername(): string {
 		return this.username;
 	}
 
 	/**
 	 * @returns {String} the authentication flow type
 	 */
-	getAuthenticationFlowType() {
+	getAuthenticationFlowType(): AuthenticationFlowType {
 		return this.authenticationFlowType;
 	}
 
@@ -136,7 +160,9 @@ export default class CognitoUser {
 	 * @param {string} authenticationFlowType New value.
 	 * @returns {void}
 	 */
-	setAuthenticationFlowType(authenticationFlowType) {
+	setAuthenticationFlowType(
+		authenticationFlowType: AuthenticationFlowType
+	): void {
 		this.authenticationFlowType = authenticationFlowType;
 	}
 
@@ -150,7 +176,13 @@ export default class CognitoUser {
 	 * @param {authSuccess} callback.onSuccess Called on success with the new session.
 	 * @returns {void}
 	 */
-	initiateAuth(authDetails, callback) {
+	initiateAuth(
+		authDetails: AuthenticationDetails,
+		callback: {
+			onFailure: (error: Error) => void;
+			onSuccess: (data: {}) => void;
+		}
+	): void {
 		const authParameters = authDetails.getAuthParameters();
 		authParameters.USERNAME = this.username;
 
@@ -1986,7 +2018,14 @@ export default class CognitoUser {
 	 * @param {nodeCallback<string>} callback Called on success or error.
 	 * @returns {void}
 	 */
-	verifySoftwareToken(totpCode, friendlyDeviceName, callback) {
+	verifySoftwareToken(
+		totpCode: string,
+		friendlyDeviceName: string,
+		callback: {
+			onFailure: (error: Error) => void;
+			onSuccess: (data: any) => void;
+		}
+	) {
 		if (!(this.signInUserSession != null && this.signInUserSession.isValid())) {
 			this.client.request(
 				'VerifySoftwareToken',

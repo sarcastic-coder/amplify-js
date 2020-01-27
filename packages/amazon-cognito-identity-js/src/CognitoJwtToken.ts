@@ -17,13 +17,21 @@
 
 import { Buffer } from 'buffer/';
 
+type Payload = {
+	exp?: number;
+	iat?: number;
+};
+
 /** @class */
 export default class CognitoJwtToken {
+	protected readonly jwtToken: string;
+	protected readonly payload: Payload;
+
 	/**
 	 * Constructs a new CognitoJwtToken object
 	 * @param {string=} token The JWT token.
 	 */
-	constructor(token) {
+	constructor(token: string) {
 		// Assign object
 		this.jwtToken = token || '';
 		this.payload = this.decodePayload();
@@ -32,28 +40,28 @@ export default class CognitoJwtToken {
 	/**
 	 * @returns {string} the record's token.
 	 */
-	getJwtToken() {
+	getJwtToken(): string {
 		return this.jwtToken;
 	}
 
 	/**
 	 * @returns {int} the token's expiration (exp member).
 	 */
-	getExpiration() {
+	getExpiration(): number {
 		return this.payload.exp;
 	}
 
 	/**
 	 * @returns {int} the token's "issued at" (iat member).
 	 */
-	getIssuedAt() {
+	getIssuedAt(): number {
 		return this.payload.iat;
 	}
 
 	/**
 	 * @returns {object} the token's payload.
 	 */
-	decodePayload() {
+	decodePayload(): Payload {
 		const payload = this.jwtToken.split('.')[1];
 		try {
 			return JSON.parse(Buffer.from(payload, 'base64').toString('utf8'));

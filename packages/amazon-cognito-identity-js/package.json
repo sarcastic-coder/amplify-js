@@ -44,9 +44,9 @@
   "scripts": {
     "clean": "rimraf lib es",
     "build:commonjs": "cross-env BABEL_ENV=commonjs babel src --out-dir lib",
-    "build:es": "cross-env BABEL_ENV=es babel src --out-dir es",
+    "build:es": "node ./build es6 && cross-env BABEL_ENV=es babel src --out-dir es",
     "build:umd": "webpack",
-    "build": "npm run clean && npm run build:commonjs && npm run build:es && npm run build:umd",
+    "build": "npm run clean && node ./build es5 && npm run build:es && npm run build:umd",
     "doc": "jsdoc src -d docs",
     "lint": "eslint src",
     "lint2": "eslint enhance-rn.js",

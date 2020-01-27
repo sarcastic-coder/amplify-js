@@ -1,7 +1,19 @@
 import * as Cookies from 'js-cookie';
 
+type CookieStorageParams = {
+	domain: string;
+	path?: string;
+	expires?: number;
+	secure?: boolean;
+};
+
 /** @class */
 export default class CookieStorage {
+	public readonly domain: string;
+	public readonly path: string;
+	public readonly expires: number;
+	public readonly secure: boolean;
+
 	/**
 	 * Constructs a new CookieStorage object
 	 * @param {object} data Creation options.
@@ -10,7 +22,7 @@ export default class CookieStorage {
 	 * @param {integer} data.expires Cookie expiration (in days, default: 365)
 	 * @param {boolean} data.secure Cookie secure flag (default: true)
 	 */
-	constructor(data) {
+	constructor(data: CookieStorageParams) {
 		if (data.domain) {
 			this.domain = data.domain;
 		} else {
@@ -39,7 +51,7 @@ export default class CookieStorage {
 	 * @param {object} value - the value
 	 * @returns {string} value that was set
 	 */
-	setItem(key, value) {
+	setItem<V>(key: string, value: V): V {
 		Cookies.set(key, value, {
 			path: this.path,
 			expires: this.expires,
@@ -55,7 +67,7 @@ export default class CookieStorage {
 	 * This is used to clear the storage
 	 * @returns {string} the data item
 	 */
-	getItem(key) {
+	getItem(key: string): any {
 		return Cookies.get(key);
 	}
 
@@ -64,7 +76,7 @@ export default class CookieStorage {
 	 * @param {string} key - the key being set
 	 * @returns {string} value - value that was deleted
 	 */
-	removeItem(key) {
+	removeItem(key: string): void {
 		return Cookies.remove(key, {
 			path: this.path,
 			domain: this.domain,
@@ -76,7 +88,7 @@ export default class CookieStorage {
 	 * This is used to clear the storage
 	 * @returns {string} nothing
 	 */
-	clear() {
+	clear(): {} {
 		const cookies = Cookies.get();
 		let index;
 		for (index = 0; index < cookies.length; ++index) {

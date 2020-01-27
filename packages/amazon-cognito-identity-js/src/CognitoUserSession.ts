@@ -15,8 +15,24 @@
  * limitations under the License.
  */
 
+import CognitoIdToken from './CognitoIdToken';
+import CognitoRefreshToken from './CognitoRefreshToken';
+import CognitoAccessToken from './CognitoAccessToken';
+
+type CognitoUserSessionParams = {
+	IdToken?: CognitoIdToken;
+	RefreshToken?: CognitoRefreshToken;
+	AccessToken?: CognitoAccessToken;
+	ClockDrift?: number;
+};
+
 /** @class */
 export default class CognitoUserSession {
+	public readonly idToken: CognitoIdToken;
+	public readonly refreshToken: CognitoRefreshToken;
+	public readonly accessToken: CognitoAccessToken;
+	public readonly clockDrift: number;
+
 	/**
 	 * Constructs a new CognitoUserSession object
 	 * @param {CognitoIdToken} IdToken The session's Id token.
@@ -24,7 +40,12 @@ export default class CognitoUserSession {
 	 * @param {CognitoAccessToken} AccessToken The session's access token.
 	 * @param {int} ClockDrift The saved computer's clock drift or undefined to force calculation.
 	 */
-	constructor({ IdToken, RefreshToken, AccessToken, ClockDrift } = {}) {
+	constructor({
+		IdToken,
+		RefreshToken,
+		AccessToken,
+		ClockDrift,
+	}: CognitoUserSessionParams = {}) {
 		if (AccessToken == null || IdToken == null) {
 			throw new Error('Id token and Access Token must be present.');
 		}
@@ -39,36 +60,36 @@ export default class CognitoUserSession {
 	/**
 	 * @returns {CognitoIdToken} the session's Id token
 	 */
-	getIdToken() {
+	getIdToken(): CognitoIdToken {
 		return this.idToken;
 	}
 
 	/**
 	 * @returns {CognitoRefreshToken} the session's refresh token
 	 */
-	getRefreshToken() {
+	getRefreshToken(): CognitoRefreshToken {
 		return this.refreshToken;
 	}
 
 	/**
 	 * @returns {CognitoAccessToken} the session's access token
 	 */
-	getAccessToken() {
+	getAccessToken(): CognitoAccessToken {
 		return this.accessToken;
 	}
 
 	/**
 	 * @returns {int} the session's clock drift
 	 */
-	getClockDrift() {
+	getClockDrift(): number {
 		return this.clockDrift;
 	}
 
 	/**
 	 * @returns {int} the computer's clock drift
 	 */
-	calculateClockDrift() {
-		const now = Math.floor(new Date() / 1000);
+	calculateClockDrift(): number {
+		const now = Math.floor(new Date().valueOf() / 1000);
 		const iat = Math.min(
 			this.accessToken.getIssuedAt(),
 			this.idToken.getIssuedAt()
@@ -82,8 +103,8 @@ export default class CognitoUserSession {
 	 * in tokens and the current time (adjusted with clock drift)
 	 * @returns {boolean} if the session is still valid
 	 */
-	isValid() {
-		const now = Math.floor(new Date() / 1000);
+	isValid(): boolean {
+		const now = Math.floor(new Date().valueOf() / 1000);
 		const adjusted = now - this.clockDrift;
 
 		return (

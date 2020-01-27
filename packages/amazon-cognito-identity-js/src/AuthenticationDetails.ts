@@ -17,6 +17,14 @@
 
 /** @class */
 export default class AuthenticationDetails {
+	public validationData: {};
+	public authParameters: {
+		USERNAME: string;
+	};
+	public clientMetadata: {};
+	public username: string;
+	public password: string;
+
 	/**
 	 * Constructs a new AuthenticationDetails object
 	 * @param {object=} data Creation options.
@@ -43,35 +51,35 @@ export default class AuthenticationDetails {
 	/**
 	 * @returns {string} the record's username
 	 */
-	getUsername() {
+	public getUsername(): string {
 		return this.username;
 	}
 
 	/**
 	 * @returns {string} the record's password
 	 */
-	getPassword() {
+	public getPassword(): string {
 		return this.password;
 	}
 
 	/**
 	 * @returns {Array} the record's validationData
 	 */
-	getValidationData() {
+	public getValidationData() {
 		return this.validationData;
 	}
 
 	/**
 	 * @returns {Array} the record's authParameters
 	 */
-	getAuthParameters() {
+	public getAuthParameters() {
 		return this.authParameters;
 	}
 
 	/**
 	 * @returns {ClientMetadata} the clientMetadata for a Lambda trigger
 	 */
-	getClientMetadata() {
+	public getClientMetadata() {
 		return this.clientMetadata;
 	}
 }

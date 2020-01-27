@@ -1,6 +1,67 @@
 import UserAgent from './UserAgent';
+import CognitoUserSession from './CognitoUserSession';
+
+type ChallengeName =
+	| 'CUSTOM_CHALLENGE'
+	| 'PASSWORD_VERIFIER'
+	| 'SMS_MFA'
+	| 'DEVICE_SRP_AUTH'
+	| 'DEVICE_PASSWORD_VERIFIER'
+	| 'ADMIN_NO_SRP_AUTH';
+
+type InitiateAuthRequest = {
+	params: {};
+	response: {
+		ChallengeName: ChallengeName;
+		ChallengeParameters: {
+			USER_ID_FOR_SRP: string;
+			SRP_B: string;
+			SALT: string;
+			SECRET_BLOCK: string;
+			USERNAME: string;
+		};
+	};
+};
+
+type SignUpRequest = {
+	response: {
+		UserConfirmed: boolean;
+		UserSub: string;
+		CodeDeliveryDetails: any;
+	};
+};
+
+type VerifySoftwareTokenRequest = {
+	response: {
+		Session: CognitoUserSession;
+	};
+};
+
+type RespondToAuthChallengeRequest = {};
+
+type AssociateSoftwareTokenRequest = {};
+
+type RequestMap = {
+	InitiateAuth: InitiateAuthRequest;
+	SignUp: SignUpRequest;
+	VerifySoftwareToken: VerifySoftwareTokenRequest;
+	RespondToAuthChallenge: RespondToAuthChallengeRequest;
+	AssociateSoftwareToken: AssociateSoftwareTokenRequest;
+	GlobalSignOut: {};
+};
+
+type RequestOperations =
+	| InitiateAuthRequest
+	| SignUpRequest
+	| VerifySoftwareTokenRequest
+	| RespondToAuthChallengeRequest
+	| AssociateSoftwareTokenRequest;
+
 /** @class */
 export default class Client {
+	protected readonly endpoint: string;
+	protected readonly userAgent: string;
+
 	/**
 	 * Constructs a new AWS Cognito Identity Provider client object
 	 * @param {string} region AWS region
@@ -19,14 +80,21 @@ export default class Client {
 	 * @param {function} callback Callback called when a response is returned
 	 * @returns {void}
 	 */
-	request(operation, params, callback) {
+	request(
+		operation: keyof RequestMap,
+		params: {},
+		callback: (
+			error: null | Error,
+			data?: RequestOperations['response']
+		) => void
+	): void {
 		const headers = {
 			'Content-Type': 'application/x-amz-json-1.1',
 			'X-Amz-Target': `AWSCognitoIdentityProviderService.${operation}`,
 			'X-Amz-User-Agent': this.userAgent,
 		};
 
-		const options = {
+		const options: RequestInit = {
 			headers,
 			method: 'POST',
 			mode: 'cors',

@@ -93,6 +93,8 @@ class MemoryStorage {
 
 /** @class */
 export default class StorageHelper {
+	public readonly storageWindow: MemoryStorage;
+
 	/**
 	 * This is used to get a storage object
 	 * @returns {object} the storage

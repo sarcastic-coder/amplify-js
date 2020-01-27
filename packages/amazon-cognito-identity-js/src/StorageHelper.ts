@@ -25,7 +25,7 @@ class MemoryStorage {
 	 * @param {object} value - the value
 	 * @returns {string} value that was set
 	 */
-	static setItem(key, value) {
+	public setItem(key: string, value: any): string {
 		dataMemory[key] = value;
 		return dataMemory[key];
 	}
@@ -36,7 +36,7 @@ class MemoryStorage {
 	 * This is used to clear the storage
 	 * @returns {string} the data item
 	 */
-	static getItem(key) {
+	public getItem(key: string): string {
 		return Object.prototype.hasOwnProperty.call(dataMemory, key)
 			? dataMemory[key]
 			: undefined;
@@ -47,7 +47,7 @@ class MemoryStorage {
 	 * @param {string} key - the key being set
 	 * @returns {string} value - value that was deleted
 	 */
-	static removeItem(key) {
+	public removeItem(key: string): boolean {
 		return delete dataMemory[key];
 	}
 
@@ -55,14 +55,17 @@ class MemoryStorage {
 	 * This is used to clear the storage
 	 * @returns {string} nothing
 	 */
-	static clear() {
+	public clear(): object {
 		dataMemory = {};
 		return dataMemory;
 	}
 }
 
+export type CognitoStorage = Storage | MemoryStorage;
+
 /** @class */
 export default class StorageHelper {
+	public readonly storageWindow: CognitoStorage;
 	/**
 	 * This is used to get a storage object
 	 * @returns {object} the storage
@@ -70,10 +73,10 @@ export default class StorageHelper {
 	constructor() {
 		try {
 			this.storageWindow = window.localStorage;
-			this.storageWindow.setItem('aws.cognito.test-ls', 1);
+			this.storageWindow.setItem('aws.cognito.test-ls', '1');
 			this.storageWindow.removeItem('aws.cognito.test-ls');
 		} catch (exception) {
-			this.storageWindow = MemoryStorage;
+			this.storageWindow = new MemoryStorage();
 		}
 	}
 
@@ -81,7 +84,7 @@ export default class StorageHelper {
 	 * This is used to return the storage
 	 * @returns {object} the storage
 	 */
-	getStorage() {
+	getStorage(): CognitoStorage {
 		return this.storageWindow;
 	}
 }

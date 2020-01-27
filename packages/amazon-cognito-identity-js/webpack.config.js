@@ -25,8 +25,8 @@ var banner =
 
 var config = {
 	entry: {
-		'amazon-cognito-identity': './src/index.js',
-		'amazon-cognito-identity.min': './src/index.js',
+		'amazon-cognito-identity': './src/index.ts',
+		'amazon-cognito-identity.min': './src/index.ts',
 	},
 	output: {
 		filename: '[name].js',
@@ -53,12 +53,17 @@ var config = {
 			// All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
 			//{ enforce: 'pre', test: /\.js$/, loader: 'source-map-loader' },
 			{
-				test: /\.js$/,
+				test: /\.(ts|js)$/,
 				exclude: /node_modules/,
-				loader: 'babel-loader',
-				query: {
-					cacheDirectory: './node_modules/.cache/babel',
-				},
+				use: [
+					'babel-loader',
+					{
+						loader: 'babel-loader',
+						options: {
+							presets: ['@babel/preset-env'],
+						},
+					},
+				],
 			},
 		],
 	},

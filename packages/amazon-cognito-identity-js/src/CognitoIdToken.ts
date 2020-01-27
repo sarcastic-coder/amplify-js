@@ -1,4 +1,4 @@
-/*
+/*!
  * Copyright 2016 Amazon.com,
  * Inc. or its affiliates. All Rights Reserved.
  *
@@ -18,12 +18,12 @@
 import CognitoJwtToken from './CognitoJwtToken';
 
 /** @class */
-export default class CognitoAccessToken extends CognitoJwtToken {
+export default class CognitoIdToken extends CognitoJwtToken {
 	/**
-	 * Constructs a new CognitoAccessToken object
-	 * @param {string=} AccessToken The JWT access token.
+	 * Constructs a new CognitoIdToken object
+	 * @param {string=} IdToken The JWT Id token
 	 */
-	constructor({ AccessToken } = {}) {
-		super(AccessToken || '');
+	constructor({ IdToken }: { IdToken?: string } = {}) {
+		super(IdToken || '');
 	}
 }

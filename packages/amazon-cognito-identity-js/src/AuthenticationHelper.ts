@@ -49,11 +49,24 @@ const newPasswordRequiredChallengeUserAttributePrefix = 'userAttributes.';
 
 /** @class */
 export default class AuthenticationHelper {
+	protected N: BigInteger;
+	protected g: BigInteger;
+	protected k: BigInteger;
+	protected UValue: BigInteger;
+	protected smallAValue: BigInteger;
+	protected largeAValue: BigInteger;
+	protected infoBits: Buffer;
+	protected poolName: string;
+	protected UHexHash: string;
+	protected randomPassword: string;
+	protected SaltToHashDevices: string;
+	protected verifierDevices: string;
+
 	/**
 	 * Constructs a new AuthenticationHelper object
 	 * @param {string} PoolName Cognito user pool name.
 	 */
-	constructor(PoolName) {
+	constructor(PoolName: string) {
 		this.N = new BigInteger(initN, 16);
 		this.g = new BigInteger('2', 16);
 		this.k = new BigInteger(
@@ -80,7 +93,7 @@ export default class AuthenticationHelper {
 	 * @param {nodeCallback<BigInteger>} callback Called with (err, largeAValue)
 	 * @returns {void}
 	 */
-	getLargeAValue(callback) {
+	getLargeAValue(callback: (error: Error | null, data) => void) {
 		if (this.largeAValue) {
 			callback(null, this.largeAValue);
 		} else {
@@ -121,21 +134,21 @@ export default class AuthenticationHelper {
 	/**
 	 * @returns {string} Generated random value included in password hash.
 	 */
-	getRandomPassword() {
+	getRandomPassword(): string {
 		return this.randomPassword;
 	}
 
 	/**
 	 * @returns {string} Generated random value included in devices hash.
 	 */
-	getSaltDevices() {
+	getSaltDevices(): string {
 		return this.SaltToHashDevices;
 	}
 
 	/**
 	 * @returns {string} Value used to verify devices.
 	 */
-	getVerifierDevices() {
+	getVerifierDevices(): string {
 		return this.verifierDevices;
 	}
 
@@ -146,7 +159,11 @@ export default class AuthenticationHelper {
 	 * @param {nodeCallback<null>} callback Called with (err, null)
 	 * @returns {void}
 	 */
-	generateHashDevice(deviceGroupKey, username, callback) {
+	generateHashDevice(
+		deviceGroupKey: string,
+		username: string,
+		callback: (error: null | Error, data: null) => void
+	): void {
 		this.randomPassword = this.generateRandomString();
 		const combinedString = `${deviceGroupKey}${username}:${this.randomPassword}`;
 		const hashedString = this.hash(combinedString);
@@ -176,7 +193,10 @@ export default class AuthenticationHelper {
 	 * @returns {void}
 	 * @private
 	 */
-	calculateA(a, callback) {
+	calculateA(
+		a,
+		callback: (error: null | Error, data: null | BigInteger) => void
+	): void {
 		this.g.modPow(a, this.N, (err, A) => {
 			if (err) {
 				callback(err, null);
@@ -197,7 +217,7 @@ export default class AuthenticationHelper {
 	 * @returns {BigInteger} Computed U value.
 	 * @private
 	 */
-	calculateU(A, B) {
+	calculateU(A, B): BigInteger {
 		this.UHexHash = this.hexHash(this.padHex(A) + this.padHex(B));
 		const finalU = new BigInteger(this.UHexHash, 16);
 
@@ -210,7 +230,7 @@ export default class AuthenticationHelper {
 	 * @returns {String} Hex-encoded hash.
 	 * @private
 	 */
-	hash(buf) {
+	hash(buf: Buffer): string {
 		const str =
 			buf instanceof Buffer ? CryptoJS.lib.WordArray.create(buf) : buf;
 		const hashHex = SHA256(str).toString();
@@ -224,7 +244,7 @@ export default class AuthenticationHelper {
 	 * @returns {String} Hex-encoded hash.
 	 * @private
 	 */
-	hexHash(hexStr) {
+	hexHash(hexStr: string): string {
 		return this.hash(Buffer.from(hexStr, 'hex'));
 	}
 
@@ -235,7 +255,7 @@ export default class AuthenticationHelper {
 	 * @returns {Buffer} Strong key material.
 	 * @private
 	 */
-	computehkdf(ikm, salt) {
+	computehkdf(ikm: Buffer, salt: Buffer): Buffer {
 		const infoBitsWordArray = CryptoJS.lib.WordArray.create(
 			Buffer.concat([
 				this.infoBits,
@@ -262,12 +282,12 @@ export default class AuthenticationHelper {
 	 * @returns {void}
 	 */
 	getPasswordAuthenticationKey(
-		username,
-		password,
-		serverBValue,
-		salt,
-		callback
-	) {
+		username: string,
+		password: string,
+		serverBValue: BigInteger,
+		salt: BigInteger,
+		callback: (error: Error | null, hkdfValue: Buffer) => void
+	): void {
 		if (serverBValue.mod(this.N).equals(BigInteger.ZERO)) {
 			throw new Error('B cannot be zero.');
 		}
@@ -303,10 +323,14 @@ export default class AuthenticationHelper {
 	 * Calculates the S value used in getPasswordAuthenticationKey
 	 * @param {BigInteger} xValue Salted password hash value.
 	 * @param {BigInteger} serverBValue Server B value.
-	 * @param {nodeCallback<string>} callback Called on success or error.
+	 * @param {Function<string>} callback Called on success or error.
 	 * @returns {void}
 	 */
-	calculateS(xValue, serverBValue, callback) {
+	calculateS(
+		xValue: BigInteger,
+		serverBValue: BigInteger,
+		callback: (error: Error | null, data: BigInteger) => void
+	): void {
 		this.g.modPow(xValue, this.N, (err, gModPowXN) => {
 			if (err) {
 				callback(err, null);
@@ -331,7 +355,7 @@ export default class AuthenticationHelper {
 	 * Return constant newPasswordRequiredChallengeUserAttributePrefix
 	 * @return {newPasswordRequiredChallengeUserAttributePrefix} constant prefix value
 	 */
-	getNewPasswordRequiredChallengeUserAttributePrefix() {
+	getNewPasswordRequiredChallengeUserAttributePrefix(): string {
 		return newPasswordRequiredChallengeUserAttributePrefix;
 	}
 
@@ -340,7 +364,7 @@ export default class AuthenticationHelper {
 	 * @param {BigInteger|String} bigInt Number or string to pad.
 	 * @returns {String} Padded hex string.
 	 */
-	padHex(bigInt) {
+	padHex(bigInt: BigInteger | string): string {
 		let hashStr = bigInt.toString(16);
 		if (hashStr.length % 2 === 1) {
 			hashStr = `0${hashStr}`;

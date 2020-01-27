@@ -32,6 +32,7 @@ declare module 'amazon-cognito-identity-js' {
 		PreferredMfa: boolean;
 		Enabled: boolean;
 	}
+
 	export interface IAuthenticationDetailsData {
 		Username: string;
 		Password?: string;
@@ -60,7 +61,39 @@ declare module 'amazon-cognito-identity-js' {
 		Storage?: ICognitoStorage;
 	}
 
+	class Client {
+		endpoint: string;
+		userAgent: string | 'aws-amplify/0.1.x js';
+
+		constructor(region: string, endpoint: string);
+
+		public request(
+			operation: string,
+			params: {},
+			callback: (error: Error | null, data?: {}) => void
+		): void;
+	}
+
 	export class CognitoUser {
+		public username: string;
+		public pool: CognitoUserPool;
+		public Session: any;
+		public client: Client;
+		public storage: Storage;
+		public keyPrefix: string;
+		public userDataKey: string;
+		public preferredMFA: 'TOTP' | 'SMS' | 'NOMFA';
+		public authenticationFlowType:
+			| 'USER_SRP_AUTH'
+			| 'USER_PASSWORD_AUTH'
+			| 'CUSTOM_AUTH';
+		public signInUserSession: null | CognitoUserSession;
+		public attributes: {
+			sub: string;
+			[key: string]: string | number | boolean;
+		};
+		public deviceKey: null | string;
+
 		constructor(data: ICognitoUserData);
 
 		public setSignInUserSession(
@@ -326,10 +359,10 @@ declare module 'amazon-cognito-identity-js' {
 		public isValid(): boolean;
 	}
 	/*
-    export class CognitoIdentityServiceProvider {
-        public config: AWS.CognitoIdentityServiceProvider.Types.ClientConfiguration;
-    }
-    */
+	export class CognitoIdentityServiceProvider {
+		public config: AWS.CognitoIdentityServiceProvider.Types.ClientConfiguration;
+	}
+	*/
 	export class CognitoAccessToken {
 		payload: { [key: string]: any };
 
@@ -364,6 +397,7 @@ declare module 'amazon-cognito-identity-js' {
 		expires?: number;
 		secure?: boolean;
 	}
+
 	export class CookieStorage implements ICognitoStorage {
 		constructor(data: ICookieStorageData);
 		setItem(key: string, value: string): void;

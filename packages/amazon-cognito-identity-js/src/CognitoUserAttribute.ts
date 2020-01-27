@@ -15,14 +15,22 @@
  * limitations under the License.
  */
 
+type RawAttribute = {
+	Name: string;
+	Value: string;
+};
+
 /** @class */
 export default class CognitoUserAttribute {
+	protected Name: string;
+	protected Value: string;
+
 	/**
 	 * Constructs a new CognitoUserAttribute object
 	 * @param {string=} Name The record's name
 	 * @param {string=} Value The record's value
 	 */
-	constructor({ Name, Value } = {}) {
+	constructor({ Name, Value }: { Name?: string; Value?: string } = {}) {
 		this.Name = Name || '';
 		this.Value = Value || '';
 	}
@@ -30,7 +38,7 @@ export default class CognitoUserAttribute {
 	/**
 	 * @returns {string} the record's value.
 	 */
-	getValue() {
+	getValue(): string {
 		return this.Value;
 	}
 
@@ -39,7 +47,7 @@ export default class CognitoUserAttribute {
 	 * @param {string} value The new value.
 	 * @returns {CognitoUserAttribute} The record for method chaining.
 	 */
-	setValue(value) {
+	setValue(value: string): CognitoUserAttribute {
 		this.Value = value;
 		return this;
 	}
@@ -47,7 +55,7 @@ export default class CognitoUserAttribute {
 	/**
 	 * @returns {string} the record's name.
 	 */
-	getName() {
+	getName(): string {
 		return this.Name;
 	}
 
@@ -56,7 +64,7 @@ export default class CognitoUserAttribute {
 	 * @param {string} name The new name.
 	 * @returns {CognitoUserAttribute} The record for method chaining.
 	 */
-	setName(name) {
+	setName(name: string): CognitoUserAttribute {
 		this.Name = name;
 		return this;
 	}
@@ -64,14 +72,14 @@ export default class CognitoUserAttribute {
 	/**
 	 * @returns {string} a string representation of the record.
 	 */
-	toString() {
+	toString(): string {
 		return JSON.stringify(this);
 	}
 
 	/**
 	 * @returns {object} a flat object representing the record.
 	 */
-	toJSON() {
+	toJSON(): RawAttribute {
 		return {
 			Name: this.Name,
 			Value: this.Value,

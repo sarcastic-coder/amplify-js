@@ -17,10 +17,24 @@
 
 import Client from './Client';
 import CognitoUser from './CognitoUser';
-import StorageHelper from './StorageHelper';
+import StorageHelper, { CognitoStorage } from './StorageHelper';
+
+type CognitoUserPoolParams = {
+	UserPoolId: string;
+	ClientId: string;
+	endpoint: string;
+	AdvancedSecurityDataCollectionFlag: boolean;
+	Storage?: CognitoStorage;
+};
 
 /** @class */
 export default class CognitoUserPool {
+	public readonly userPoolId: string;
+	public readonly clientId: string;
+	public readonly client: Client;
+	public readonly advancedSecurityDataCollectionFlag: boolean;
+	public readonly storage: CognitoStorage;
+
 	/**
 	 * Constructs a new CognitoUserPool object
 	 * @param {object} data Creation options.
@@ -32,7 +46,7 @@ export default class CognitoUserPool {
 	 *        to support cognito advanced security features. By default, this
 	 *        flag is set to true.
 	 */
-	constructor(data) {
+	constructor(data: CognitoUserPoolParams) {
 		const {
 			UserPoolId,
 			ClientId,
@@ -65,14 +79,14 @@ export default class CognitoUserPool {
 	/**
 	 * @returns {string} the user pool id
 	 */
-	getUserPoolId() {
+	getUserPoolId(): string {
 		return this.userPoolId;
 	}
 
 	/**
 	 * @returns {string} the client id
 	 */
-	getClientId() {
+	getClientId(): string {
 		return this.clientId;
 	}
 
@@ -137,7 +151,7 @@ export default class CognitoUserPool {
 	 *
 	 * @returns {CognitoUser} the user retrieved from storage
 	 */
-	getCurrentUser() {
+	getCurrentUser(): CognitoUser {
 		const lastUserKey = `CognitoIdentityServiceProvider.${this.clientId}.LastAuthUser`;
 
 		const lastAuthUser = this.storage.getItem(lastUserKey);
@@ -162,7 +176,7 @@ export default class CognitoUserPool {
 	 * @param {string} username the username for the context data
 	 * @returns {string} the user context data
 	 **/
-	getUserContextData(username) {
+	getUserContextData(username: string): undefined | { EncodedData?: {} } {
 		if (typeof AmazonCognitoAdvancedSecurityData === 'undefined') {
 			return undefined;
 		}
